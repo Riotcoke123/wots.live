@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/logo.svg" alt="wots.live logo" width="360">
+  <img src="https://wots.live/assets/wotslive_noquestion-CwHKRaeE.svg" alt="wots.live logo" width="360">
 </p>
 
 <h3 align="center">wots.live API Documentation</h3>
@@ -26,6 +26,7 @@
   - [GET /api/pokes](#get-apipokes)
   - [GET /api/leaderboard/points](#get-apileaderboardpoints)
   - [GET /api/featured-streams](#get-apifeatured-streams)
+  - [GET /api/featured-streamers](#get-apifeatured-streamers)
   - [GET /api/directory](#get-apidirectory)
 - [Response Envelope](#response-envelope)
 - [Notes](#notes)
@@ -273,6 +274,61 @@ GET https://api.livebeam.live/api/featured-streams?limit=8
 
 ---
 
+### `GET /api/featured-streamers`
+
+Returns a curated list of featured **streamers** (channel/creator cards), distinct from [`featured-streams`](#get-apifeatured-streams) which lists featured live streams. Includes display styling hints (`icon`, `color`) and follower counts.
+
+**Example request**
+
+```
+GET https://api.livebeam.live/api/featured-streamers
+```
+
+**Example response**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "icon": "🎮",
+      "name": "MrBased",
+      "color": "from-blue-600 to-blue-700",
+      "channel_id": "4c9d0f62-cbd3-4f62-8e6d-eed0185e08c7",
+      "pfp_url": "https://jcbvjakdtywqikciddqq.supabase.co/storage/v1/object/public/user-assets/pfp/{user_id}-{hash}.jpeg",
+      "is_live": false,
+      "user_id": "849d85f9-10b1-4825-ade6-a717f8b992ed",
+      "followers_count": 116770
+    },
+    {
+      "icon": "🎨",
+      "name": "artgarfunkeljr",
+      "color": "from-green-600 to-green-700",
+      "channel_id": "a5f918ef-b345-4317-815c-b8d9f541665d",
+      "pfp_url": "https://pomf2.lain.la/f/1gm97og8.png",
+      "is_live": false,
+      "user_id": "2e85f7b4-2a98-41ae-aec9-009e07840410",
+      "followers_count": 37
+    }
+  ]
+}
+```
+
+**Fields**
+
+| Field | Type | Description |
+|---|---|---|
+| `icon` | string | Emoji icon shown on the streamer's card |
+| `name` | string | Streamer's display name |
+| `color` | string | Tailwind CSS gradient class pair used for the card's background styling |
+| `channel_id` | string (UUID) | Channel identifier |
+| `pfp_url` | string \| null | Profile picture URL — usually Supabase Storage, but can point to any external host (e.g. `pomf2.lain.la`) |
+| `is_live` | boolean | Whether the streamer is currently live |
+| `user_id` | string (UUID) | Streamer's user ID (not always equal to `channel_id`) |
+| `followers_count` | integer | Total follower count |
+
+---
+
 ### `GET /api/directory`
 
 Returns the full channel directory, split into `live` and `offline` channels. Each channel aggregates one or more linked platforms (e.g. wots, Kick, YouTube), and reports the currently active or most recent stream per platform.
@@ -439,6 +495,8 @@ Every endpoint wraps its payload in the same top-level envelope:
 - `thumbnail_url` and profile picture URLs are hosted on third-party CDNs (Mux and Supabase Storage) and are subject to change.
 - Optional `limit` query parameters were observed on `recent-streams`, `pokes`, `leaderboard/points`, and `featured-streams`; behavior when omitted is not documented here and should be verified against the live API.
 - `directory` aggregates multiple external platforms (`wots`, `kick`, `youtube` observed so far) per channel; a channel is considered `is_live` if any linked platform is currently live.
+- `featured-streamers` and `featured-streams` are separate endpoints: the former lists curated streamer/channel cards (with follower counts and card styling), the latter lists featured live streams. Do not confuse the two.
+- In `featured-streamers`, `channel_id` and `user_id` are not always the same value for a given entry — treat them as distinct identifiers.
 - This is unofficial, community-sourced documentation based on observed responses and is not guaranteed to be complete or stable. Field names, endpoints, and behavior may change without notice.
 
 ## License
